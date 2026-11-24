@@ -1,4 +1,4 @@
-This is a simple partial implementation of the pipboy interface for use on an ESP32 with a screen.
+This is a simple partial implementation of the pipboy 3000 Mark IV (Fallout 4) interface for use on an ESP32 with a screen.
 Tested device: ESP32-035 (3.5" variant of CYD)
 
 You can pickup one of these boards really cheaply on Aliexpress

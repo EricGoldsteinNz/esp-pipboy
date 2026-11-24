@@ -12,6 +12,7 @@
 #include "src/SDfunctions.h"
 #include "GIFOffset.h"
 #include "src/TFT_eSPI_QRGen/qrcode.h"
+#include "pipboy3000mk4.h"
 
 /* Images */
 #include "images/INIT.h"
@@ -34,11 +35,11 @@
 #define IN_TIME 32
 #define IN_RADIO 33
 
-const int MENU_STAT = 0;
-const int MENU_INV = 1;
-const int MENU_DATA = 2;
-const int MENU_MAP = 3;
-const int MENU_RADIO = 4;
+#define MENU_STAT 0
+#define MENU_INV 1
+#define MENU_DATA 2
+#define MENU_MAP 3
+#define MENU_RADIO 4
 
 #define Light_green 0x35C2
 #define Dark_green 0x0261 
@@ -59,21 +60,7 @@ PIPBOYCONFIG pipboyconf;
 
 //=====================================================================
 long demo_mode_lastswitch = -1;
-//========================POSITIONING VARIABLES=============================
-//Please don't change these values unless you know what you are doing, changing them can alter the way the screen is displayed
-const int display_menu_y = 8;
-const int display_menu_drop = 17;
-const int display_menu_STAT = 70;
-const int display_menu_INV = 140;
-const int display_menu_DATA = 210;
-const int display_menu_MAP = 300;
-const int display_menu_RADIO = 370;
 
-//STAT tier two menu
-const int display_menu_STAT_menu_y = 32;
-const int display_menu_STAT_STATUS = 40;
-const int display_menu_STAT_SPECIAL = 130;
-const int display_menu_STAT_PERKS = 240;
 //=====================================================================
 // Load GIF library
 AnimatedGIF gif;
@@ -166,12 +153,12 @@ void loop(){
     // Do Menu selected specific things
     if (menu == MENU_STAT) {
       Serial.println("Drawing STAT menu.");
-      selectMenuItem(MENU_STAT);
+      selectMenuItem(tft, MENU_STAT);
       //Draw tier two menu
       tft.setTextSize(2);
-      tft.drawString("STATUS",display_menu_STAT_STATUS,display_menu_STAT_menu_y, 1);
-      tft.drawString("SPECIAL",display_menu_STAT_SPECIAL,display_menu_STAT_menu_y, 1);
-      tft.drawString("PERKS",display_menu_STAT_PERKS,display_menu_STAT_menu_y, 1);
+      tft.drawString("STATUS",display_menu_STAT_STATUS,display_menu_tiertwo_y, 1);
+      tft.drawString("SPECIAL",display_menu_STAT_SPECIAL,display_menu_tiertwo_y, 1);
+      tft.drawString("PERKS",display_menu_STAT_PERKS,display_menu_tiertwo_y, 1);
       //TODO draw character damage
       //Draw player info footer
       tft.fillRect(5,300,115,13,Dark_green);
@@ -189,7 +176,19 @@ void loop(){
     }
     if (menu == MENU_INV) {
       Serial.println("Drawing INV menu.");
-      selectMenuItem(MENU_INV);
+      selectMenuItem(tft, MENU_INV);
+      //Draw tier two menu
+      tft.setTextSize(2);
+      tft.drawString("WEAPONS",display_menu_INV_WEAPONS,display_menu_tiertwo_y, 1);
+      tft.drawString("APPAREL",display_menu_INV_APPAREL,display_menu_tiertwo_y, 1);
+      tft.drawString("AID",display_menu_INV_AID,display_menu_tiertwo_y, 1);
+      //Draw Items
+      tft.drawString("10mm Pistol",15,100, 1);
+      tft.drawString("Baseball Bat",15,130, 1);
+      tft.drawString("Fat Man",15,160, 1);
+      tft.drawString("Fragmentation Mine (6)",15,190, 1);
+      tft.drawString("Molotov Cocktail (5)",15,220, 1);
+      tft.drawString("Super Sledge",15,250, 1);
       /*if (gif.open((uint8_t *)INV, sizeof(INV), GIFDraw)) {
         tft.startWrite();  // The TFT chip select is locked low
         while (gif.playFrame(true, NULL)) {
@@ -201,17 +200,17 @@ void loop(){
     }
     if (menu == MENU_DATA) {
       Serial.println("Drawing DATA menu.");
-      selectMenuItem(MENU_DATA);
+      selectMenuItem(tft, MENU_DATA);
       // create qrcode
       qrcode.create(pipboyconf.QRcode_URL);
     }
     if (menu == MENU_MAP) {
       Serial.println("Drawing MAP menu.");
-      selectMenuItem(MENU_MAP);
+      selectMenuItem(tft, MENU_MAP);
     }
     if(menu == MENU_RADIO) {
       Serial.println("Drawing RADIO menu.");
-      selectMenuItem(MENU_RADIO);
+      selectMenuItem(tft, MENU_RADIO);
     }
     prevmenu = menu;
   }
@@ -237,41 +236,4 @@ void loop(){
       if (menu > 4) menu = 0;
   }
   delay(5);           // let this time pass
-}
-
-
-void selectMenuItem(int menuItem){
-  int menuItemstartx = 0;
-  int menuItemWidth = 0;
-  switch(menuItem){
-    //case(MENU_STAT):
-    case (MENU_INV):
-      menuItemstartx = display_menu_INV;
-      menuItemWidth = 33;
-      break;
-    case (MENU_DATA):
-      menuItemstartx = display_menu_DATA;
-      menuItemWidth = 44;
-      break;
-    case (MENU_MAP):
-      menuItemstartx = display_menu_MAP;
-      menuItemWidth = 33;
-      break;
-    case (MENU_RADIO):
-      menuItemstartx = display_menu_RADIO;
-      menuItemWidth = 55;
-      break;
-    //Default to STAT
-    default:
-      menuItemstartx = display_menu_STAT;
-      menuItemWidth = 44;
-      break;
-  }
-  //blackout the menu line under selected item
-  tft.drawLine(menuItemstartx-10,display_menu_y + display_menu_drop,menuItemstartx+menuItemWidth+10,display_menu_y + display_menu_drop,TFT_BLACK);
-  //draw menu selected
-  tft.drawLine(menuItemstartx-10,display_menu_y + display_menu_drop,menuItemstartx-10,display_menu_y + display_menu_drop - 10,Light_green);
-  tft.drawLine(menuItemstartx+menuItemWidth+10,display_menu_y + display_menu_drop,menuItemstartx+menuItemWidth+10,display_menu_y + display_menu_drop - 10,Light_green);
-  tft.drawLine(menuItemstartx-10,display_menu_y + display_menu_drop - 10,menuItemstartx-10+5,display_menu_y + display_menu_drop - 10,Light_green);
-  tft.drawLine(menuItemstartx+menuItemWidth+10,display_menu_y + display_menu_drop - 10,menuItemstartx+menuItemWidth+10-5,display_menu_y + display_menu_drop - 10,Light_green);
 }
